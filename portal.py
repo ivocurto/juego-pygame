@@ -9,6 +9,8 @@ class Portal(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.counter = 0
+        self.sound = pygame.mixer.Sound("assets/Sounds/teleport.wav")
+        self.sound.set_volume(0.4)
 
     def update(self, screen, portal2):
         #Dibujar al portal
@@ -20,27 +22,20 @@ class Portal(pygame.sprite.Sprite):
         self.counter += 1
         if self.counter >= cooldown:
             self.counter = 0
-            for projectile in projectiles:
-                if axis == "vertical":
-                    if projectile.rect.colliderect(self.rect):
-                        projectile.rect.x = portal_2.rect.x
-                    elif projectile.rect.colliderect(portal_2.rect):
-                        projectile.rect.x = self.rect.x
-                elif axis == "horizontal":
-                    if projectile.rect.colliderect(self.rect):
-                        projectile.rect.y = portal_2.rect.y
-                    elif projectile.rect.colliderect(portal_2.rect):
-                        projectile.rect.y = self.rect.y
 
             if axis == "vertical":
                 if player.rect.colliderect(self.rect):
                     player.rect.x = portal_2.rect.x - 40
+                    self.sound.play()
                 elif player.rect.colliderect(portal_2.rect):
                     player.rect.x = self.rect.x + 25
+                    self.sound.play()
             elif axis == "horizontal":
                 if player.rect.colliderect(self.rect):
                     player.rect.y = portal_2.rect.y + 10
+                    self.sound.play()
                 elif player.rect.colliderect(portal_2.rect):
                     player.rect.y = self.rect.y - 75
+                    self.sound.play()
 
         self.update(screen, portal_2)

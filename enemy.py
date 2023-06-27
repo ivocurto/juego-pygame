@@ -10,7 +10,7 @@ class Enemy(pygame.sprite.Sprite):
         self.vel_y = 0
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        self.velocity = 3
+        self.velocity = 0
         self.counter = 0
         self.index = 0
         self.direction = 1
@@ -20,7 +20,7 @@ class Enemy(pygame.sprite.Sprite):
         self.images_fell_right = []
         self.images_fell_left = []
         self.len_fall_secuence = 16
-        self.walk_countdown = 10
+        self.walk_countdown = 3
         for number in range(1,18):
             img_fell_right = pygame.image.load(f'img\enemy/fell{number}.png')
             img_fell_left = pygame.transform.flip(img_fell_right, True, False)
@@ -37,6 +37,8 @@ class Enemy(pygame.sprite.Sprite):
         self.times_teleported = 0
         self.teleport_cooldown = 10
         self.teleport_counter = 0
+        self.sound_death = pygame.mixer.Sound("assets\Sounds\kill_slime.mp3")
+        self.sound_death.set_volume(0.4)
 
     def update(self, screen, platform_list, portal_list):
         next_position_y = 0
@@ -63,11 +65,11 @@ class Enemy(pygame.sprite.Sprite):
                             self.image = self.images_fell_left[self.len_fall_secuence]
                 if self.index > 31:
                     self.len_fall_secuence = 16
-                    self.walk_countdown = 10
+                    self.walk_countdown = 3
                     if self.direction == 1:
-                        self.velocity = 1
+                        self.velocity = 2
                     elif self.direction == -1:
-                        self.velocity = -1
+                        self.velocity = -2
                     self.index = 0
                     self.fell = False
             #Animación al caminar
@@ -119,6 +121,7 @@ class Enemy(pygame.sprite.Sprite):
 
         #verificar colision con portales
         if pygame.sprite.spritecollide(self, portal_list, False):
+            self.sound_death.play()
             self.kill()
 
         #actualizar las coordenadas del jugador

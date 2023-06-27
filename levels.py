@@ -1,23 +1,90 @@
 import pygame
 from pygame.locals import *
-from player import Player
 from enemy import Enemy
 from portal import Portal
 from general_functions import *
-from platforms import Platform
 from key import Key
 from boss import Boss
 from heart import Heart
 from trap import Trap
-from chronometer import Chronometer
-from menu_object import Menu
 from level import Level
+from menu_object import Menu
+from button import Button
 
 def run_level1(dataa):
     level_data = Level(dataa[0])
 
     #TEMPORIZADOR CREADOR DE ENEMIGOS
-    pygame.time.set_timer(pygame.USEREVENT, 7000)
+    pygame.time.set_timer(pygame.USEREVENT, 4000)
+
+    #Traps
+    traps = pygame.sprite.Group()
+    trap1 = Trap(25, 180, "right")
+    traps.add(trap1)
+
+    #Portals
+    portals = pygame.sprite.Group()
+    portal_left_bottom = Portal("img/platforms/portal_vertical.png", 275, 475, 25, 100)
+    portal_right_bottom = Portal("img/platforms/portal_vertical.png", 775, 475, 25, 100)
+    portal_left1 = Portal("img/platforms/portal_horizontal.png", 25, 150, 100, 25)
+    portal_left2 = Portal("img/platforms/portal_horizontal.png", 25, 450, 100, 25)
+    portal_right1 = Portal("img/platforms/portal_horizontal.png", 150, 425, 100, 25)
+    portal_right2 = Portal("img/platforms/portal_horizontal.png", 150, 0, 100, 25)
+    portals.add(portal_left_bottom, portal_right_bottom, portal_left1, portal_left2, portal_right1, portal_right2)
+
+    #Keys
+    keys = pygame.sprite.Group()
+    key_left_top = Key(180, 70)
+    key_left_bottom = Key(180, 510)
+    key_right_bottom = Key(710, 510)
+    keys.add(key_left_top, key_left_bottom, key_right_bottom)
+
+    #Entities
+    enemy = Enemy(340, 40)
+    enemies = pygame.sprite.Group()
+    enemies.add(enemy)
+
+    run = True
+    while run:
+
+        exit = level_data.update(enemies, portals)
+
+        enemies.update(level_data.screen, level_data.platforms, portals)
+        portal_left_bottom.teleport(level_data.screen, level_data.projectiles, portal_right_bottom, level_data.player, "vertical")
+        portal_left1.teleport(level_data.screen, level_data.projectiles, portal_left2, level_data.player, "horizontal")
+        portal_right1.teleport(level_data.screen, level_data.projectiles, portal_right2, level_data.player, "horizontal")
+        keys.update(level_data.screen)
+        win_level = level_data.player.get_keys(keys, 3)
+        if len(traps) > 0:
+            trap1.get_hurt(traps, level_data.projectiles, level_data)
+            traps.update(level_data.screen, level_data.player, level_data.projectiles)
+        level_data.hearts.update(level_data.screen, level_data.player)
+        if level_data.player.hearts == 1 or exit == 1:
+            run = False
+            level_data.score = 0
+            win_lose_menu("YOU LOSE", level_data.score)
+            return level_data.score
+        if win_level:
+            run = False
+            level_data.score += 60 - level_data.time
+            win_lose_menu("YOU WIN", level_data.score)
+            print(level_data.score)
+            return level_data.score
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                return 1
+            elif event.type == pygame.USEREVENT:
+                generate_enemy(enemies, 375, 40, 660, 40)
+
+        pygame.display.update()
+
+def run_level2(dataa):
+    level_data = Level(dataa[1])
+
+    #TEMPORIZADOR CREADOR DE ENEMIGOS
+    pygame.time.set_timer(pygame.USEREVENT, 4000)
 
     #Traps
     traps = pygame.sprite.Group()
@@ -49,39 +116,32 @@ def run_level1(dataa):
     enemies.add(enemy)
 
     run = True
-    print(level_data.data)
     while run:
-        print(level_data.data["score"])
-        level_data.clock.tick(level_data.FPS) # IGUAL EN TODOS
-        level_data.screen.blit(level_data.bg_img, (0,0)) # IGUAL EN TODOS
 
-        level_data.platforms.draw(level_data.screen) # IGUAL EN TODOS
+        exit = level_data.update(enemies, portals)
 
-        level_data.shot_cooldown = verify_shot(level_data.player, level_data.projectiles, level_data.shot_cooldown, level_data.game_over) # IGUAL EN TODOS
-        level_data.game_over = level_data.player.update(level_data.screen, level_data.platforms, enemies, level_data.projectiles, level_data.game_over, portals, level_data.data) # IGUAL EN TODOS
         enemies.update(level_data.screen, level_data.platforms, portals)
-        level_data.projectiles.update(level_data.screen) # IGUAL EN TODOS
         portal_left_bottom.teleport(level_data.screen, level_data.projectiles, portal_left_top, level_data.player, "horizontal")
         portal_right_bottom.teleport(level_data.screen, level_data.projectiles, portal_right_top, level_data.player, "horizontal")
         portal_center_bottom.teleport(level_data.screen, level_data.projectiles, portal_center_top, level_data.player, "horizontal")
         keys.update(level_data.screen)
         if len(traps) > 0:
-            trap_left.get_hurt(level_data.projectiles, level_data.data)
-            trap_right.get_hurt(level_data.projectiles, level_data.data)
+            trap_left.get_hurt(traps, level_data.projectiles, level_data)
+            trap_right.get_hurt(traps, level_data.projectiles, level_data)
             traps.update(level_data.screen, level_data.player, level_data.projectiles)
-        level_data.hearts.update(level_data.screen, level_data.player) # IGUAL EN TODOS
-        win_level = level_data.player.get_keys(keys, 4)
-        if level_data.player.hearts == 1:
-            run = False
-            return level_data.data
-        if win_level: # IGUAL EN TODOS
-            level_data.data["score"] += 60 - level_data.data["time"]
-            level_data.data["level"] += 1
-            run = False
-            return level_data.data
-        verify_projectile_collision(level_data.projectiles, enemies, level_data.platforms) # IGUAL EN TODOS
 
-        level_data.data["time"] = level_data.chronometer.get_time_elapsed(level_data.screen, level_data.data) # IGUAL EN TODOS
+        win_level = level_data.player.get_keys(keys, 4)
+        if level_data.player.hearts == 1 or exit == 1:
+            run = False
+            level_data.score = 0
+            win_lose_menu("YOU LOSE", level_data.score)
+            return level_data.score
+        if win_level: # IGUAL EN TODOS
+            run = False
+            level_data.score += 60 - level_data.time
+            win_lose_menu("YOU WIN", level_data.score)
+            print(level_data.score)
+            return level_data.score
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -89,82 +149,6 @@ def run_level1(dataa):
                 return 1
             elif event.type == pygame.USEREVENT:
                 generate_enemy(enemies, 150, 40, 550, 40)
-
-        pygame.display.update()
-
-def run_level2(dataa):
-    level_data = Level(dataa[1])
-
-    #TEMPORIZADOR CREADOR DE ENEMIGOS
-    pygame.time.set_timer(pygame.USEREVENT, 7000)
-
-    #Traps
-    traps = pygame.sprite.Group()
-    trap1 = Trap(25, 50, "right")
-    traps.add(trap1)
-
-    #Portals
-    portals = pygame.sprite.Group()
-    portal_left_bottom = Portal("img/platforms/portal_vertical.png", 275, 475, 25, 100)
-    portal_right_bottom = Portal("img/platforms/portal_vertical.png", 775, 475, 25, 100)
-    portal_left1 = Portal("img/platforms/portal_horizontal.png", 25, 150, 100, 25)
-    portal_left2 = Portal("img/platforms/portal_horizontal.png", 25, 450, 100, 25)
-    portal_right1 = Portal("img/platforms/portal_horizontal.png", 150, 425, 100, 25)
-    portal_right2 = Portal("img/platforms/portal_horizontal.png", 150, 0, 100, 25)
-    portals.add(portal_left_bottom, portal_right_bottom, portal_left1, portal_left2, portal_right1, portal_right2)
-
-    #Keys
-    keys = pygame.sprite.Group()
-    key_left_top = Key(180, 70)
-    key_left_bottom = Key(180, 510)
-    key_right_bottom = Key(710, 510)
-    keys.add(key_left_top, key_left_bottom, key_right_bottom)
-
-    #Entities
-    enemy = Enemy(340, 40)
-    enemies = pygame.sprite.Group()
-    enemies.add(enemy)
-
-    run = True
-    while run:
-        print(level_data.data["score"])
-        level_data.clock.tick(level_data.FPS)
-        level_data.screen.blit(level_data.bg_img, (0,0))
-
-        level_data.platforms.draw(level_data.screen)
-
-        level_data.shot_cooldown = verify_shot(level_data.player, level_data.projectiles, level_data.shot_cooldown, level_data.game_over)
-        level_data.game_over = level_data.player.update(level_data.screen, level_data.platforms, enemies, level_data.projectiles, level_data.game_over, portals, level_data.data)
-        enemies.update(level_data.screen, level_data.platforms, portals)
-        level_data.projectiles.update(level_data.screen)
-        portal_left_bottom.teleport(level_data.screen, level_data.projectiles, portal_right_bottom, level_data.player, "vertical")
-        portal_left1.teleport(level_data.screen, level_data.projectiles, portal_left2, level_data.player, "horizontal")
-        portal_right1.teleport(level_data.screen, level_data.projectiles, portal_right2, level_data.player, "horizontal")
-        keys.update(level_data.screen)
-        win_level = level_data.player.get_keys(keys, 3)
-        if len(traps) > 0:
-            trap1.get_hurt(level_data.projectiles, level_data.data)
-            traps.update(level_data.screen, level_data.player, level_data.projectiles)
-        level_data.hearts.update(level_data.screen, level_data.player)
-        if level_data.player.hearts == 1:
-            run = False
-            return level_data.data
-        if win_level:
-            level_data.data["level"] += 1
-            level_data.data["score"] += 60 - level_data.data["time"]
-            run = False
-            return level_data.data
-        verify_projectile_collision(level_data.projectiles, enemies, level_data.platforms)
-
-
-        level_data.data["time"] = level_data.chronometer.get_time_elapsed(level_data.screen, level_data.data)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                return 1
-            elif event.type == pygame.USEREVENT:
-                generate_enemy(enemies, 375, 40, 660, 40)
 
         pygame.display.update()
 
@@ -211,31 +195,25 @@ def run_level3(dataa):
 
     run = True
     while run:
-        print(level_data.data["score"])
-        level_data.clock.tick(level_data.FPS)
-        level_data.screen.blit(level_data.bg_img, (0,0))
+        exit = level_data.update(enemies, portals)
 
-        level_data.platforms.draw(level_data.screen)
-
-        level_data.shot_cooldown = verify_shot(level_data.player, level_data.projectiles, level_data.shot_cooldown, level_data.game_over)
-        level_data.game_over = level_data.player.update(level_data.screen, level_data.platforms, enemies, level_data.projectiles, level_data.game_over, portals, level_data.data)
         enemies.update(level_data.screen, level_data.platforms, portals)
-        level_data.projectiles.update(level_data.screen)
+
         portal_bottom.teleport(level_data.screen, level_data.projectiles, portal_top, level_data.player, "horizontal")
         boss.update(level_data.screen, level_data.player, level_data.projectiles)
-        win_level = boss.get_hurt(level_data.projectiles, level_data.data)
+        win_level = boss.get_hurt(level_data.projectiles, level_data)
         boss_hearts.update(level_data.screen, boss)
-        level_data.hearts.update(level_data.screen, level_data.player)
-        level_data.data["time"] = level_data.chronometer.get_time_elapsed(level_data.screen, level_data.data)
-        if level_data.player.hearts == 1:
+        if level_data.player.hearts == 1 or exit == 1:
             run = False
-            return level_data.data
+            level_data.score = 0
+            win_lose_menu("YOU LOSE", level_data.score)
+            return level_data.score
         if win_level:
-            level_data.data["level"] += 1
             run = False
-            level_data.data["score"] += 60 - level_data.data["time"]
-            return level_data.data
-        verify_projectile_collision(level_data.projectiles, enemies, level_data.platforms)
+            level_data.score += 60 - level_data.time
+            win_lose_menu("YOU WIN", level_data.score)
+            print(level_data.score)
+            return level_data.score
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -243,3 +221,28 @@ def run_level3(dataa):
                 return 1
 
         pygame.display.update()
+
+##################WIN/LOSE MENU
+def win_lose_menu(state, score):
+    win_lose_menu = Menu()
+
+    OK_BUTTON = Button("assets/Play Rect.png",(400, 450), 
+                        "OK", font_size= 25, base_color=((255, 255, 0)),
+                        hovering_color=(255, 255, 255), size= (400,75))
+
+    run = True
+    while run:
+
+        button_list = [OK_BUTTON]
+        pygame.display.flip()
+
+        MENU_MOUSE_POS = win_lose_menu.update(state, 40, 400, 100, button_list)
+        title = Menu.set_title(f"Score: {score}", 40, 400, 300)
+        Menu.show_title(win_lose_menu, title)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                return 1
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if OK_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    run = False

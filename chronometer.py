@@ -8,7 +8,7 @@ class Chronometer:
     def init_chronometer(self):
         self.initial_time = pygame.time.get_ticks()
 
-    def get_time_elapsed(self, screen, data):
+    def get_time_elapsed(self, screen):
         self.time_elapsed = pygame.time.get_ticks() - self.initial_time
         if self.time_elapsed // 1000 == self.aux:
             self.aux += 1

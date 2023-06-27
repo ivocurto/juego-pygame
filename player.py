@@ -31,15 +31,20 @@ class Player:
         self.keys_achieved = 0
         self.hearts = 4
         self.game_over = False
+        self.sound_pickup_key = pygame.mixer.Sound("assets/Sounds/collect_key.mp3")
+        self.sound_pickup_key.set_volume(0.4)
+        self.sound_death = pygame.mixer.Sound("assets/Sounds/death.mp3")
+        self.sound_death.set_volume(0.4)
 
     def get_keys(self, keys, lvl_keys):
         if pygame.sprite.spritecollide(self, keys, True):
+            self.sound_pickup_key.play()
             self.keys_achieved += 1
             print(self.keys_achieved)
             if self.keys_achieved == lvl_keys:
                 return True
 
-    def update(self, screen, platform_list, enemies, projectiles, game_over, portals, data):
+    def update(self, screen, platform_list, enemies, projectiles, game_over, portals, level):
         next_position_x = 0
         next_position_y = 0
         walk_countdown = 3
@@ -49,13 +54,14 @@ class Player:
             if (pygame.sprite.spritecollide(self, enemies, False) or
             pygame.sprite.spritecollide(self, projectiles, True) or
             self.game_over):
-                print(data)
-                data["score"] -= 10
-                print(data)
+                self.sound_death.play()
+                if level.score - 10 < 0:
+                    level.score = 0
+                else:
+                    level.score -= 10
                 game_over = True
                 self.index = 0
                 self.counter = 0
-                self.hearts -= 1
                 print("game_over")
                 self.game_over = False
 
@@ -98,6 +104,7 @@ class Player:
 
         elif game_over:
             if self.index == -1:
+                self.hearts -= 1
                 self.rect.x = self.spawn_point[0]
                 self.rect.y = self.spawn_point[1]
                 game_over = False

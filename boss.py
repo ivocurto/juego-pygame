@@ -16,10 +16,12 @@ class Boss:
         self.shot_counter = 0
         self.life = 20
         self.delay_counter =0
-        self.delay = 75
-        self.hurt_delay = 15
-        self.hurt_delay_counter = 0
+        self.delay = 30
+        # self.hurt_delay = 5
+        # self.hurt_delay_counter = 0
         self.hearts = 21
+        self.sound_hurt = pygame.mixer.Sound("assets\Sounds\hurt_boss.wav")
+        self.sound_hurt.set_volume(0.4)
 
     def update(self, screen, player, projectiles):   
         #Dibujar al jefe
@@ -34,9 +36,9 @@ class Boss:
 
     def move(self):
         
-        if self.rect.y <= 175:
+        if self.rect.y <= 200:
             self.direction = 0
-        elif self.rect.y >= 400:
+        elif self.rect.y >= 300:
             self.direction = 1
         elif self.direction_counter >= self.distance:
             self.direction_counter = 0
@@ -55,27 +57,28 @@ class Boss:
     def shot(self, player, projectiles):
         self.shot_counter += 1
         if self.shot_counter >= self.shot_cooldown:
-            self.shot_cooldown = random.randint(50, 100)
+            self.shot_cooldown = random.randint(25, 75)
             self.shot_counter = 0
             if player.rect.x < 400:
-                projectile = Projectile(self.rect.left - 15, self.rect.top + 25, -1, 2)
+                projectile = Projectile(self.rect.left - 15, self.rect.top + 75, -1, 2)
             elif player.rect.x >= 400:
-                projectile = Projectile(self.rect.right, self.rect.top + 25, 1, 2)
+                projectile = Projectile(self.rect.right, self.rect.top + 75, 1, 2)
             projectiles.add(projectile)
 
-    def get_hurt(self, projectiles, data):
+    def get_hurt(self, projectiles, level):
         if pygame.sprite.spritecollide(self, projectiles, True):
             self.image = pygame.image.load("img/boss_hurt.png")
+            self.sound_hurt.play()
             self.life -= 1
             self.hearts -= 1
             print(self.life)
             if self.life <= 0:
-                data["score"] += 150
+                level.score += 150
                 return True
 
-    def hurt_with_contact(self, player):
-        self.hurt_delay_counter += 1
-        if self.hurt_delay_counter > self.hurt_delay:
-            if self.rect.colliderect(player.rect) and player.game_over is False:
-                self.hurt_delay_counter = 0
-                player.game_over = True
+    # def hurt_with_contact(self, player):
+    #     self.hurt_delay_counter += 1
+    #     if self.hurt_delay_counter > self.hurt_delay:
+    #         if self.rect.colliderect(player.rect) and player.game_over is False:
+    #             self.hurt_delay_counter = 0
+    #             player.game_over = True

@@ -13,7 +13,6 @@ class Menu(Game):
         menu_mouse_pos = Menu.get_position(self)
         Menu.pass_mouse(self, button_list, menu_mouse_pos)
         Menu.show_title(self, title)
-        pygame.display.flip()
         return menu_mouse_pos
 
     def get_position(self):

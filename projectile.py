@@ -10,6 +10,8 @@ class Projectile(pygame.sprite.Sprite):
         self.width = self.image.get_width()
         self.height = self.image.get_height()
         self.direction = direction
+        self.sound = pygame.mixer.Sound("assets/Sounds/laserShoot.wav")
+        self.sound.set_volume(0.4)
         if direction == 1:
             self.velocity = vel
         elif direction == -1:

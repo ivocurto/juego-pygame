@@ -10,6 +10,7 @@ def verify_shot(player, projectiles, shot_cooldown, game_over):
                 projectile = Projectile(player.rect.left - 15, player.rect.top + 25, -1, 5)
             elif player.direction == 1:
                 projectile = Projectile(player.rect.right, player.rect.top + 25, 1, 5)
+            projectile.sound.play()
             projectiles.add(projectile)
             shot_cooldown = True
         if not key_list[pygame.K_SPACE]:
@@ -19,7 +20,8 @@ def verify_shot(player, projectiles, shot_cooldown, game_over):
 
 def verify_projectile_collision(projectiles, enemies, platform_list):
     pygame.sprite.groupcollide(projectiles, platform_list, True, False)
-    pygame.sprite.groupcollide(projectiles, enemies, True, True)
+    for enemy in pygame.sprite.groupcollide(enemies, projectiles, True, True):
+        enemy.sound_death.play()
 
 def generate_enemy(enemies, x, y, x2, y2):
     print("enemigo creado")
