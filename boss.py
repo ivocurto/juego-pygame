@@ -71,7 +71,6 @@ class Boss:
             self.sound_hurt.play()
             self.life -= 1
             self.hearts -= 1
-            print(self.life)
             if self.life <= 0:
                 level.score += 150
                 return True

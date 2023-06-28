@@ -7,6 +7,7 @@ from game import Game
 from general_functions import *
 from button import Button
 from menu_object import Menu
+# from menu import open_options_menu
 # from menu import *
 
 class Level(Game):
@@ -41,7 +42,6 @@ class Level(Game):
 
 
     def update(self, enemies, portals):
-        print(self.score)
 
         self.clock.tick(self.FPS)
         self.screen.blit(self.bg_img, (0,0))
@@ -69,24 +69,22 @@ class Level(Game):
             return exit
 
     def pause_game():
-        main_menu = Menu()
+        pause_menu = Menu()
 
         RESUME_BUTTON = Button("assets/Play Rect.png",(400, 200), 
                             "Resume", font_size= 25, base_color=((255, 255, 0)),
                             hovering_color=(255, 255, 255), size= (400,75))
-        OPTIONS_BUTTON = Button("assets/Play Rect.png", (400, 300), 
-                            "Options", font_size= 25, base_color=((255, 255, 0)),
-                            hovering_color=(255, 255, 255), size= (400,75))
-        MAIN_MENU_BUTTON = Button("assets/Play Rect.png", (400, 400), 
+        MAIN_MENU_BUTTON = Button("assets/Play Rect.png", (400, 300), 
                             "Level Selector", font_size= 25, base_color=((255, 255, 0)),
                             hovering_color=(255, 255, 255), size= (400,75))
 
         run = True
         while run:
 
-            button_list = [RESUME_BUTTON, OPTIONS_BUTTON, MAIN_MENU_BUTTON]
+            button_list = [RESUME_BUTTON, MAIN_MENU_BUTTON]
 
-            MENU_MOUSE_POS = main_menu.update("PAUSE", 40, 400, 100, button_list)
+            MENU_MOUSE_POS = pause_menu.update("PAUSE", 40, 400, 100, button_list)
+            pygame.display.flip()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -96,8 +94,6 @@ class Level(Game):
                     if RESUME_BUTTON.checkForInput(MENU_MOUSE_POS):
                         run = False
                         return 0
-                    elif OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
-                        print("opciones")
                     elif MAIN_MENU_BUTTON.checkForInput(MENU_MOUSE_POS):
                         run = False
                         return 1

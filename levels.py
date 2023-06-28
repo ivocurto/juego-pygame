@@ -10,6 +10,53 @@ from trap import Trap
 from level import Level
 from menu_object import Menu
 from button import Button
+from ranking import Ranking
+
+def open_insert_name_menu():
+    insert_name_menu = Menu()
+
+    SUMBIT_BUTTON = Button("assets/Play Rect.png", (400, 500), 
+                        "SUMBIT", font_size= 25, base_color=((255, 255, 0)),
+                        hovering_color=(255, 255, 255), size= (400,75))
+
+    font = pygame.font.Font(None, 36)
+
+    name = ""
+    text = font.render(name, True, (255, 255, 255))
+    text_rect = text.get_rect()
+    text_rect.center = (325, 300)
+    scaled_rect = pygame.Rect(0,0, 200, 50)
+    scaled_rect.center = (400, 300)
+
+    run = True
+    while run:
+        button_list = [SUMBIT_BUTTON]
+
+        MENU_MOUSE_POS = insert_name_menu.update("Name:", 40, 400, 100, button_list)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                return 1
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    reproduce_something("assets\Sounds\select_option.wav", 0.4)
+                    name = name[:-1]  # Remove the last character
+                else:
+                    if len(name) < 11:
+                        reproduce_something("assets\Sounds\select_option.wav", 0.4)
+                        name += event.unicode  # Add the typed character
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if SUMBIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    run = False
+                    return name
+            # Update the rendered text
+            text = font.render(name, True, (255, 255, 255))
+            pygame.draw.rect(insert_name_menu.screen, (255,255,255), scaled_rect, 5, -1)
+
+            insert_name_menu.screen.blit(text, text_rect)
+            pygame.display.flip()
+
 
 def run_level1(dataa):
     level_data = Level(dataa[0])
@@ -67,8 +114,12 @@ def run_level1(dataa):
         if win_level:
             run = False
             level_data.score += 60 - level_data.time
+            if level_data.score < 0:
+                level_data.score = 0
+            name = open_insert_name_menu()
+            if isinstance(name, str):
+                Ranking(name, level_data.score, 1)
             win_lose_menu("YOU WIN", level_data.score)
-            print(level_data.score)
             return level_data.score
 
         for event in pygame.event.get():
@@ -139,8 +190,12 @@ def run_level2(dataa):
         if win_level: # IGUAL EN TODOS
             run = False
             level_data.score += 60 - level_data.time
+            if level_data.score < 0:
+                level_data.score = 0
+            name = open_insert_name_menu()
+            if isinstance(name, str):
+                Ranking(name, level_data.score, 2)
             win_lose_menu("YOU WIN", level_data.score)
-            print(level_data.score)
             return level_data.score
 
         for event in pygame.event.get():
@@ -211,8 +266,12 @@ def run_level3(dataa):
         if win_level:
             run = False
             level_data.score += 60 - level_data.time
+            if level_data.score < 0:
+                level_data.score = 0
+            name = open_insert_name_menu()
+            if isinstance(name, str):
+                Ranking(name, level_data.score, 3)
             win_lose_menu("YOU WIN", level_data.score)
-            print(level_data.score)
             return level_data.score
 
         for event in pygame.event.get():
@@ -234,11 +293,12 @@ def win_lose_menu(state, score):
     while run:
 
         button_list = [OK_BUTTON]
-        pygame.display.flip()
 
         MENU_MOUSE_POS = win_lose_menu.update(state, 40, 400, 100, button_list)
         title = Menu.set_title(f"Score: {score}", 40, 400, 300)
         Menu.show_title(win_lose_menu, title)
+        pygame.display.flip()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False

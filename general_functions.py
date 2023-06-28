@@ -24,7 +24,6 @@ def verify_projectile_collision(projectiles, enemies, platform_list):
         enemy.sound_death.play()
 
 def generate_enemy(enemies, x, y, x2, y2):
-    print("enemigo creado")
     random_x = random.randint(0,1)
     match random_x:
         case 0:
@@ -33,3 +32,8 @@ def generate_enemy(enemies, x, y, x2, y2):
             enemy = Enemy(x2, y2)
             enemy.direction = -1
     enemies.add(enemy)
+
+def reproduce_something(song_path, volume:float):
+    sound = pygame.mixer.Sound(song_path)
+    sound.set_volume(volume)
+    sound.play()

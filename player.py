@@ -40,7 +40,6 @@ class Player:
         if pygame.sprite.spritecollide(self, keys, True):
             self.sound_pickup_key.play()
             self.keys_achieved += 1
-            print(self.keys_achieved)
             if self.keys_achieved == lvl_keys:
                 return True
 
@@ -62,7 +61,6 @@ class Player:
                 game_over = True
                 self.index = 0
                 self.counter = 0
-                print("game_over")
                 self.game_over = False
 
             key_list = pygame.key.get_pressed()
