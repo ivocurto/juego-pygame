@@ -56,12 +56,15 @@ def initial_menu(music):
 def open_options_menu(music):
     options_menu = Menu()
 
-    DOWN_BUTTON = Button("assets/Play Rect.png", (250, 250), 
+    DOWN_BUTTON = Button("assets/Play Rect.png", (250, 200), 
                         "-", font_size= 25, base_color=((255, 255, 0)),
                         hovering_color=(255, 255, 255), size= (75,75))
-    UP_BUTTON = Button("assets/Play Rect.png", (550, 250), 
+    UP_BUTTON = Button("assets/Play Rect.png", (550, 200), 
                         "+", font_size= 25, base_color=((255, 255, 0)),
                         hovering_color=(255, 255, 255), size= (75,75))
+    CONTROLS_BUTTON = Button("assets/Play Rect.png", (400, 400), 
+                            "Controls", font_size= 25, base_color=((255, 255, 0)),
+                            hovering_color=(255, 255, 255), size= (400,75))
     BACK_BUTTON = Button("assets/Play Rect.png", (400, 500), 
                         "Back", font_size= 25, base_color=((255, 255, 0)),
                         hovering_color=(255, 255, 255), size= (400,75))
@@ -69,12 +72,12 @@ def open_options_menu(music):
     run = True
     while run:
 
-        button_list = [DOWN_BUTTON, UP_BUTTON, BACK_BUTTON]
+        button_list = [DOWN_BUTTON, UP_BUTTON, BACK_BUTTON, CONTROLS_BUTTON]
         music_volume_rounded = music.show_voume()
-        MENU_MOUSE_POS = options_menu.update("OPTIONS", 40, 400, 100, button_list)
-        title = Menu.set_title("MUSIC", 25, 400, 200)
+        MENU_MOUSE_POS = options_menu.update("OPTIONS", 40, 400, 75, button_list)
+        title = Menu.set_title("MUSIC", 25, 400, 150)
         Menu.show_title(options_menu, title)
-        title2 = Menu.set_title(f"{music_volume_rounded}", 25, 400, 250)
+        title2 = Menu.set_title(f"{music_volume_rounded}", 25, 400, 200)
         Menu.show_title(options_menu, title2)
         pygame.display.flip()
 
@@ -89,6 +92,11 @@ def open_options_menu(music):
                     music.increase_volume()
                 elif BACK_BUTTON.checkForInput(MENU_MOUSE_POS):
                     run = False
+                elif CONTROLS_BUTTON.checkForInput(MENU_MOUSE_POS):
+                    history = History(CONTROLS)
+                    history = history.update()
+                    if history == 1:
+                        run = False
 
 with open('levels.json') as file:
     dataa = json.load(file)
@@ -123,18 +131,21 @@ def select_level(music):
                 return 1
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if LVL1_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    level_selector.exit = run_level1(dataa)
-                    if level_selector.exit == 1:
+                    level_selector.exit = run_level1(dataa, music)
+                    Music(music.path, music.volume)
+                    if level_selector.exit == -1:
                         run = False
                         return 1
                 elif LVL2_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    level_selector.exit = run_level2(dataa)
-                    if level_selector.exit == 1:
+                    level_selector.exit = run_level2(dataa, music)
+                    Music(music.path, music.volume)
+                    if level_selector.exit == -1:
                         run = False
                         return 1
                 elif LVL3_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    level_selector.exit = run_level3(dataa)
-                    if level_selector.exit == 1:
+                    level_selector.exit = run_level3(dataa, music)
+                    Music(music.path, music.volume)
+                    if level_selector.exit == -1:
                         run = False
                         return 1
                 elif MAIN_MENU_BUTTON.checkForInput(MENU_MOUSE_POS):
@@ -195,7 +206,7 @@ def open_ranking_menu(music):
 
 def open_ranking_lvl_menu(lvl):
     ranking1 = Menu()
-
+    flag = False
     BACK_BUTTON = Button("assets/Play Rect.png", (400, 500), 
                         "BACK", font_size= 25, base_color=((255, 255, 0)),
                         hovering_color=(255, 255, 255), size= (400,75))
@@ -206,12 +217,16 @@ def open_ranking_lvl_menu(lvl):
         button_list = [BACK_BUTTON]
 
         MENU_MOUSE_POS = ranking1.update("RANKING", 40, 400, 100, button_list)
-        top5 = Ranking.show_top5_list(lvl)
+        if not flag:
+            top5 = Ranking.show_top5_list(lvl)
+            flag = True
         pos_y = 150
         try:
+            top = 1
             for player in top5:
                 pos_y += 50
-                title = Menu.set_title(f"{player['name']} - {player['score']}", 25, 400, pos_y)
+                title = Menu.set_title(f"{top}. {player['name']} - {player['score']}", 25, 400, pos_y)
+                top = top + 1
                 Menu.show_title(ranking1, title)
         except:
             title = Menu.set_title("Undefined - Undefined", 25, 400, 200)

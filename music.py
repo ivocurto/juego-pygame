@@ -1,6 +1,7 @@
 import pygame
 class Music:
     def __init__(self, song_path:str, volume: float):
+        self.path = song_path
         pygame.mixer.music.load(song_path)
         pygame.mixer.music.play(-1)
         self.volume = volume

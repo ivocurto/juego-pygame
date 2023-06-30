@@ -1,9 +1,13 @@
 import pygame
+from config.images import GREEN_PROJECTILE, PINK_PROJECTILE 
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self, x, y, direction, vel):
+    def __init__(self, x, y, direction, vel, color = "pink"):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load('img\proyectile\proyectile1.png')
+        if color == "pink":
+            self.image = pygame.image.load(PINK_PROJECTILE)
+        elif color == "green":
+            self.image = pygame.image.load(GREEN_PROJECTILE)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y

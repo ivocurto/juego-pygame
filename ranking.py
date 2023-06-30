@@ -1,54 +1,47 @@
 import sqlite3
 class Ranking:
     def __init__(self, player_name, score, lvl):
-        match lvl:
-            case 1:
-                database_name = "ranking_database.db"
-            case 2:
-                database_name = "ranking_database2.db"
-            case 3:
-                database_name = "ranking_database3.db"
+        self.database_name = "ranking_database.db"
+        self.database_flag = False
 
-        with sqlite3.connect(database_name) as conection:
+        with sqlite3.connect(self.database_name) as conection:
             try:
                 sentence = """
                             create table Ranking
                             (
                             id integer primary key autoincrement,
                             nombre text,
-                            score int
+                            score int,
+                            level int
                             )
                 """
                 conection.execute(sentence)
-                sentence = """
-                            insert into Ranking(nombre, score) values(?,?)
-                            """
-                conection.execute(sentence, (player_name, score))
+                try:
+                    sentence = """
+                                insert into Ranking(nombre, score, level) values(?,?,?)
+                                """
+                    conection.execute(sentence, (player_name, score, lvl))
+                except:
+                    pass
             except:
                 sentence = """
-                            insert into Ranking(nombre, score) values(?,?)
+                            insert into Ranking(nombre, score, level) values(?,?,?)
                             """
-                conection.execute(sentence, (player_name, score))
+                conection.execute(sentence, (player_name, score, lvl))
 
 
     def show_top5_list(lvl):
-        match lvl:
-            case 1:
-                database_name = "ranking_database.db"
-            case 2:
-                database_name = "ranking_database2.db"
-            case 3:
-                database_name = "ranking_database3.db"
+        database_name = "ranking_database.db"
 
         with sqlite3.connect(database_name) as conection:
             try:
-                sentence = "select * from Ranking order by score desc limit 5"
-                cursor = conection.execute(sentence)
+                sentence = "select * from Ranking WHERE level = ? order by score desc limit 5"
+                cursor = conection.execute(sentence, (lvl,))
                 top5 = []
                 for fila in cursor:
-                    dict = {"name": fila[1], "score": fila[2]}
+                    dict = {"name": fila[1], "score": fila[2], "level": fila[3]}
                     top5.append(dict)
                 return top5
             except:
-                print(f"Error, no hay ningun usuario en el top o no existe la base de datos del nivel {lvl}")
-
+                with open("log.txt", "a", encoding="utf-8") as file:
+                    file.write(f"No hay ningun usuario en el top del nivel {lvl}\n")

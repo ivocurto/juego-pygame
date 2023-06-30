@@ -1,9 +1,10 @@
 import pygame, random
 from projectile import Projectile
+from config.images import BOSS, BOSS_HURT
 
 class Boss:
     def __init__(self, x, y):
-        self.image = pygame.image.load("img/boss.png")
+        self.image = pygame.image.load(BOSS)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -17,8 +18,6 @@ class Boss:
         self.life = 20
         self.delay_counter =0
         self.delay = 30
-        # self.hurt_delay = 5
-        # self.hurt_delay_counter = 0
         self.hearts = 21
         self.sound_hurt = pygame.mixer.Sound("assets\Sounds\hurt_boss.wav")
         self.sound_hurt.set_volume(0.4)
@@ -29,10 +28,9 @@ class Boss:
         self.delay_counter += 1
         if self.delay_counter >= self.delay:
             self.delay_counter = 0
-            self.image = pygame.image.load("img/boss.png")
+            self.image = pygame.image.load(BOSS)
         Boss.move(self)
         Boss.shot(self, player, projectiles)
-        # Boss.hurt_with_contact(self, player)
 
     def move(self):
         
@@ -57,27 +55,20 @@ class Boss:
     def shot(self, player, projectiles):
         self.shot_counter += 1
         if self.shot_counter >= self.shot_cooldown:
-            self.shot_cooldown = random.randint(25, 75)
+            self.shot_cooldown = random.randint(40, 65)
             self.shot_counter = 0
             if player.rect.x < 400:
-                projectile = Projectile(self.rect.left - 15, self.rect.top + 75, -1, 2)
+                projectile = Projectile(self.rect.left - 16, self.rect.top + 75, -1, 4, "green")
             elif player.rect.x >= 400:
-                projectile = Projectile(self.rect.right, self.rect.top + 75, 1, 2)
+                projectile = Projectile(self.rect.right + 2, self.rect.top + 75, 1, 4, "green")
             projectiles.add(projectile)
 
     def get_hurt(self, projectiles, level):
         if pygame.sprite.spritecollide(self, projectiles, True):
-            self.image = pygame.image.load("img/boss_hurt.png")
+            self.image = pygame.image.load(BOSS_HURT)
             self.sound_hurt.play()
             self.life -= 1
             self.hearts -= 1
             if self.life <= 0:
                 level.score += 150
                 return True
-
-    # def hurt_with_contact(self, player):
-    #     self.hurt_delay_counter += 1
-    #     if self.hurt_delay_counter > self.hurt_delay:
-    #         if self.rect.colliderect(player.rect) and player.game_over is False:
-    #             self.hurt_delay_counter = 0
-    #             player.game_over = True

@@ -21,4 +21,3 @@ class Heart(pygame.sprite.Sprite):
     def lose_heart(self, entity):
         if entity.hearts == self.heart_number:
             self.kill()
-

@@ -8,58 +8,24 @@ from boss import Boss
 from heart import Heart
 from trap import Trap
 from level import Level
-from menu_object import Menu
-from button import Button
-from ranking import Ranking
-
-def open_insert_name_menu():
-    insert_name_menu = Menu()
-
-    SUMBIT_BUTTON = Button("assets/Play Rect.png", (400, 500), 
-                        "SUMBIT", font_size= 25, base_color=((255, 255, 0)),
-                        hovering_color=(255, 255, 255), size= (400,75))
-
-    font = pygame.font.Font(None, 36)
-
-    name = ""
-    text = font.render(name, True, (255, 255, 255))
-    text_rect = text.get_rect()
-    text_rect.center = (325, 300)
-    scaled_rect = pygame.Rect(0,0, 200, 50)
-    scaled_rect.center = (400, 300)
-
-    run = True
-    while run:
-        button_list = [SUMBIT_BUTTON]
-
-        MENU_MOUSE_POS = insert_name_menu.update("Name:", 40, 400, 100, button_list)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                return 1
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_BACKSPACE:
-                    reproduce_something("assets\Sounds\select_option.wav", 0.4)
-                    name = name[:-1]  # Remove the last character
-                else:
-                    if len(name) < 11:
-                        reproduce_something("assets\Sounds\select_option.wav", 0.4)
-                        name += event.unicode  # Add the typed character
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if SUMBIT_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    run = False
-                    return name
-            # Update the rendered text
-            text = font.render(name, True, (255, 255, 255))
-            pygame.draw.rect(insert_name_menu.screen, (255,255,255), scaled_rect, 5, -1)
-
-            insert_name_menu.screen.blit(text, text_rect)
-            pygame.display.flip()
+from music import Music
+from history import History
+from config.images import *
+from config.colors import *
 
 
-def run_level1(dataa):
-    level_data = Level(dataa[0])
+def run_level1(dataa, music):
+    data_lvl_1 = dataa[0]
+    Music(data_lvl_1["music_path"], music.volume)
+    history = History(LVL_1_HISTORY)
+    history = history.update()
+    if history == 1:
+        return -1
+    history = History(LVL_1_HISTORY2)
+    history = history.update()
+    if history == 1:
+        return -1
+    level_data = Level(data_lvl_1)
 
     #TEMPORIZADOR CREADOR DE ENEMIGOS
     pygame.time.set_timer(pygame.USEREVENT, 4000)
@@ -71,12 +37,12 @@ def run_level1(dataa):
 
     #Portals
     portals = pygame.sprite.Group()
-    portal_left_bottom = Portal("img/platforms/portal_vertical.png", 275, 475, 25, 100)
-    portal_right_bottom = Portal("img/platforms/portal_vertical.png", 775, 475, 25, 100)
-    portal_left1 = Portal("img/platforms/portal_horizontal.png", 25, 150, 100, 25)
-    portal_left2 = Portal("img/platforms/portal_horizontal.png", 25, 450, 100, 25)
-    portal_right1 = Portal("img/platforms/portal_horizontal.png", 150, 425, 100, 25)
-    portal_right2 = Portal("img/platforms/portal_horizontal.png", 150, 0, 100, 25)
+    portal_left_bottom = Portal(WALL_IMG, 275, 475, 25, 100)
+    portal_right_bottom = Portal(WALL_IMG, 775, 475, 25, 100)
+    portal_left1 = Portal(PLATFORM_IMG, 25, 150, 100, 25)
+    portal_left2 = Portal(PLATFORM_IMG, 25, 450, 100, 25)
+    portal_right1 = Portal(PLATFORM_IMG, 150, 425, 100, 25)
+    portal_right2 = Portal(PLATFORM_IMG, 150, 0, 100, 25)
     portals.add(portal_left_bottom, portal_right_bottom, portal_left1, portal_left2, portal_right1, portal_right2)
 
     #Keys
@@ -95,44 +61,38 @@ def run_level1(dataa):
     while run:
 
         exit = level_data.update(enemies, portals)
-
         enemies.update(level_data.screen, level_data.platforms, portals)
         portal_left_bottom.teleport(level_data.screen, level_data.projectiles, portal_right_bottom, level_data.player, "vertical")
         portal_left1.teleport(level_data.screen, level_data.projectiles, portal_left2, level_data.player, "horizontal")
         portal_right1.teleport(level_data.screen, level_data.projectiles, portal_right2, level_data.player, "horizontal")
         keys.update(level_data.screen)
-        win_level = level_data.player.get_keys(keys, 3)
+        win_level = level_data.player.get_keys(keys, 3, level_data)
         if len(traps) > 0:
             trap1.get_hurt(traps, level_data.projectiles, level_data)
             traps.update(level_data.screen, level_data.player, level_data.projectiles)
         level_data.hearts.update(level_data.screen, level_data.player)
-        if level_data.player.hearts == 1 or exit == 1:
+
+        final = level_data.check_if_win_or_lose(win_level)
+        if final == -1 or exit == 1:
             run = False
-            level_data.score = 0
-            win_lose_menu("YOU LOSE", level_data.score)
-            return level_data.score
-        if win_level:
-            run = False
-            level_data.score += 60 - level_data.time
-            if level_data.score < 0:
-                level_data.score = 0
-            name = open_insert_name_menu()
-            if isinstance(name, str):
-                Ranking(name, level_data.score, 1)
-            win_lose_menu("YOU WIN", level_data.score)
-            return level_data.score
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                return 1
+                return -1
             elif event.type == pygame.USEREVENT:
                 generate_enemy(enemies, 375, 40, 660, 40)
 
         pygame.display.update()
 
-def run_level2(dataa):
-    level_data = Level(dataa[1])
+def run_level2(dataa, music):
+    data_lvl_2 = dataa[1]
+    level_data = Level(data_lvl_2)
+    Music(data_lvl_2["music_path"], music.volume)
+    history = History(LVL_2_HISTORY)
+    history = history.update()
+    if history == 1:
+        return -1
 
     #TEMPORIZADOR CREADOR DE ENEMIGOS
     pygame.time.set_timer(pygame.USEREVENT, 4000)
@@ -145,12 +105,12 @@ def run_level2(dataa):
 
     #Portals
     portals = pygame.sprite.Group()
-    portal_left_bottom = Portal("img/platforms/portal_horizontal.png", 25, 400, 100, 25)
-    portal_left_top = Portal("img/platforms/portal_horizontal.png", 25, 0, 100, 25)
-    portal_right_bottom = Portal("img/platforms/portal_horizontal.png", 675, 400, 100, 25)
-    portal_right_top = Portal("img/platforms/portal_horizontal.png", 675, 0, 100, 25)
-    portal_center_bottom = Portal("img/platforms/portal_horizontal.png", 325, 575, 150, 25)
-    portal_center_top = Portal("img/platforms/portal_horizontal.png", 325, 275, 150, 25)
+    portal_left_bottom = Portal(HORIZONTAL_PORTAL_IMG, 25, 400, 100, 25)
+    portal_left_top = Portal(HORIZONTAL_PORTAL_IMG, 25, 0, 100, 25)
+    portal_right_bottom = Portal(HORIZONTAL_PORTAL_IMG, 675, 400, 100, 25)
+    portal_right_top = Portal(HORIZONTAL_PORTAL_IMG, 675, 0, 100, 25)
+    portal_center_bottom = Portal(HORIZONTAL_PORTAL_IMG, 325, 575, 150, 25)
+    portal_center_top = Portal(HORIZONTAL_PORTAL_IMG, 325, 275, 150, 25)
     portals.add(portal_left_bottom, portal_left_top, portal_right_bottom, portal_right_top, portal_center_bottom, portal_center_top)
 
     #Keys
@@ -181,57 +141,52 @@ def run_level2(dataa):
             trap_right.get_hurt(traps, level_data.projectiles, level_data)
             traps.update(level_data.screen, level_data.player, level_data.projectiles)
 
-        win_level = level_data.player.get_keys(keys, 4)
-        if level_data.player.hearts == 1 or exit == 1:
+        win_level = level_data.player.get_keys(keys, 4, level_data)
+
+        final = level_data.check_if_win_or_lose(win_level)
+        if final == -1 or exit == 1:
             run = False
-            level_data.score = 0
-            win_lose_menu("YOU LOSE", level_data.score)
-            return level_data.score
-        if win_level: # IGUAL EN TODOS
-            run = False
-            level_data.score += 60 - level_data.time
-            if level_data.score < 0:
-                level_data.score = 0
-            name = open_insert_name_menu()
-            if isinstance(name, str):
-                Ranking(name, level_data.score, 2)
-            win_lose_menu("YOU WIN", level_data.score)
-            return level_data.score
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                return 1
+                return -1
             elif event.type == pygame.USEREVENT:
                 generate_enemy(enemies, 150, 40, 550, 40)
 
         pygame.display.update()
 
-def run_level3(dataa):
-    level_data = Level(dataa[2])
+def run_level3(dataa, music):
+    data_lvl_3 = dataa[2]
+    Music(data_lvl_3["music_path"], music.volume)
+    history = History(LVL_3_HISTORY)
+    history = history.update()
+    if history == 1:
+        return -1
+    level_data = Level(data_lvl_3)
 
-    #HeartsBoss
+    #Boss Hearts
     boss_hearts = pygame.sprite.Group()
-    boss_heart1 = Heart(370, 30, 1, "Purple")
-    boss_heart2 = Heart(410, 30, 2, "Purple")
-    boss_heart3 = Heart(450, 30, 3, "Purple")
-    boss_heart4 = Heart(490, 30, 4, "Purple")
-    boss_heart5 = Heart(530, 30, 5, "Purple")
-    boss_heart6 = Heart(570, 30, 6, "Purple")
-    boss_heart7 = Heart(610, 30, 7, "Purple")
-    boss_heart8 = Heart(650, 30, 8, "Purple")
-    boss_heart9 = Heart(690, 30, 9, "Purple")
-    boss_heart10 = Heart(730, 30, 10, "Purple")
-    boss_heart11 = Heart(370, 70, 11, "Purple")
-    boss_heart12 = Heart(410, 70, 12, "Purple")
-    boss_heart13 = Heart(450, 70, 13, "Purple")
-    boss_heart14 = Heart(490, 70, 14, "Purple")
-    boss_heart15 = Heart(530, 70, 15, "Purple")
-    boss_heart16 = Heart(570, 70, 16, "Purple")
-    boss_heart17 = Heart(610, 70, 17, "Purple")
-    boss_heart18 = Heart(650, 70, 18, "Purple")
-    boss_heart19 = Heart(690, 70, 19, "Purple")
-    boss_heart20 = Heart(730, 70, 20, "Purple")
+    boss_heart1 = Heart(370, 30, 1, PURPLE)
+    boss_heart2 = Heart(410, 30, 2, PURPLE)
+    boss_heart3 = Heart(450, 30, 3, PURPLE)
+    boss_heart4 = Heart(490, 30, 4, PURPLE)
+    boss_heart5 = Heart(530, 30, 5, PURPLE)
+    boss_heart6 = Heart(570, 30, 6, PURPLE)
+    boss_heart7 = Heart(610, 30, 7, PURPLE)
+    boss_heart8 = Heart(650, 30, 8, PURPLE)
+    boss_heart9 = Heart(690, 30, 9, PURPLE)
+    boss_heart10 = Heart(730, 30, 10, PURPLE)
+    boss_heart11 = Heart(370, 70, 11, PURPLE)
+    boss_heart12 = Heart(410, 70, 12, PURPLE)
+    boss_heart13 = Heart(450, 70, 13, PURPLE)
+    boss_heart14 = Heart(490, 70, 14, PURPLE)
+    boss_heart15 = Heart(530, 70, 15, PURPLE)
+    boss_heart16 = Heart(570, 70, 16, PURPLE)
+    boss_heart17 = Heart(610, 70, 17, PURPLE)
+    boss_heart18 = Heart(650, 70, 18, PURPLE)
+    boss_heart19 = Heart(690, 70, 19, PURPLE)
+    boss_heart20 = Heart(730, 70, 20, PURPLE)
     boss_hearts.add(boss_heart1, boss_heart2, boss_heart3, boss_heart4, boss_heart5,
                     boss_heart6, boss_heart7, boss_heart8, boss_heart9, boss_heart10,
                     boss_heart11, boss_heart12, boss_heart13, boss_heart14, boss_heart15,
@@ -239,8 +194,8 @@ def run_level3(dataa):
 
     #Portals
     portals = pygame.sprite.Group()
-    portal_bottom = Portal("img/platforms/portal_horizontal.png", 25, 575, 750, 25)
-    portal_top = Portal("img/platforms/portal_horizontal.png", 25, 0, 750, 25)
+    portal_bottom = Portal(HORIZONTAL_PORTAL_IMG, 25, 575, 750, 25)
+    portal_top = Portal(HORIZONTAL_PORTAL_IMG, 25, 0, 750, 25)
     portals.add(portal_bottom, portal_top)
 
     #Entities
@@ -258,51 +213,19 @@ def run_level3(dataa):
         boss.update(level_data.screen, level_data.player, level_data.projectiles)
         win_level = boss.get_hurt(level_data.projectiles, level_data)
         boss_hearts.update(level_data.screen, boss)
-        if level_data.player.hearts == 1 or exit == 1:
-            run = False
-            level_data.score = 0
-            win_lose_menu("YOU LOSE", level_data.score)
-            return level_data.score
+
         if win_level:
+            history = History(WIN_HISTORY)
+            history = history.update()
+            if history == 1:
+                return -1
+        final = level_data.check_if_win_or_lose(win_level)
+        if final == -1 or exit == 1:
             run = False
-            level_data.score += 60 - level_data.time
-            if level_data.score < 0:
-                level_data.score = 0
-            name = open_insert_name_menu()
-            if isinstance(name, str):
-                Ranking(name, level_data.score, 3)
-            win_lose_menu("YOU WIN", level_data.score)
-            return level_data.score
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                return 1
+                return -1
 
         pygame.display.update()
-
-##################WIN/LOSE MENU
-def win_lose_menu(state, score):
-    win_lose_menu = Menu()
-
-    OK_BUTTON = Button("assets/Play Rect.png",(400, 450), 
-                        "OK", font_size= 25, base_color=((255, 255, 0)),
-                        hovering_color=(255, 255, 255), size= (400,75))
-
-    run = True
-    while run:
-
-        button_list = [OK_BUTTON]
-
-        MENU_MOUSE_POS = win_lose_menu.update(state, 40, 400, 100, button_list)
-        title = Menu.set_title(f"Score: {score}", 40, 400, 300)
-        Menu.show_title(win_lose_menu, title)
-        pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                return 1
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if OK_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    run = False

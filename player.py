@@ -36,10 +36,11 @@ class Player:
         self.sound_death = pygame.mixer.Sound("assets/Sounds/death.mp3")
         self.sound_death.set_volume(0.4)
 
-    def get_keys(self, keys, lvl_keys):
+    def get_keys(self, keys, lvl_keys, level):
         if pygame.sprite.spritecollide(self, keys, True):
             self.sound_pickup_key.play()
             self.keys_achieved += 1
+            level.score += 5
             if self.keys_achieved == lvl_keys:
                 return True
 
@@ -88,17 +89,7 @@ class Player:
                 if self.direction == -1:
                     self.image = self.images_left[self.index]
 
-            #Controlar animación
-            if self.counter > walk_countdown:
-                self.counter = 0
-                self.index += 1
-                if self.index >= len(self.images_right):
-                    self.index = 0
-                if self.direction == 1:
-                    self.image = self.images_right[self.index]
-                if self.direction == -1:
-                    self.image = self.images_left[self.index]
-
+            control_animation(self, walk_countdown)
 
         elif game_over:
             if self.index == -1:
@@ -148,3 +139,15 @@ class Player:
         screen.blit(self.image, self.rect)
         # pygame.draw.rect(screen, (255,255,255), self.rect, 1)
         return game_over
+
+
+def control_animation(self, walk_countdown):
+    if self.counter > walk_countdown:
+                self.counter = 0
+                self.index += 1
+                if self.index >= len(self.images_right):
+                    self.index = 0
+                if self.direction == 1:
+                    self.image = self.images_right[self.index]
+                if self.direction == -1:
+                    self.image = self.images_left[self.index]

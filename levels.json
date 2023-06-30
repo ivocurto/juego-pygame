@@ -1,5 +1,6 @@
 [
-    {
+    {   
+        "level_number": 1,
         "player": {"x": 525, "y": 500},
         "hearts": [
             {"x": 30, "y": 30, "num": 1},
@@ -26,9 +27,11 @@
             {"path": "img/platforms/plataforma_vertical.png", "x": 300, "y": 25, "width": 25, "height": 150},
             {"path": "img/platforms/plataforma_vertical.png", "x": 300, "y": 350, "width": 25, "height": 125},
             {"path": "img/platforms/plataforma_vertical.png", "x": 450, "y": 300, "width": 25, "height": 75}
-        ]
+        ],
+        "music_path": "assets/Sounds/let-the-games-begin-21858.mp3"
     },
     {
+        "level_number": 2,
         "player": {"x": 380, "y": 350},
         "hearts": [
             {"x": 30, "y": 30, "num": 1},
@@ -47,9 +50,11 @@
             {"path": "img/platforms/plataforma.png", "x": 675, "y": 425, "width": 100, "height": 25},
             {"path": "img/platforms/plataforma_vertical.png", "x": 0, "y": 0, "width": 25, "height": 600},
             {"path": "img/platforms/plataforma_vertical.png", "x": 775, "y": 0, "width": 25, "height": 600}
-        ]
+        ],
+        "music_path": "assets/Sounds/electrode-115161.mp3"
     },
     {
+        "level_number": 3,
         "player": {"x": 375, "y": 50},
         "hearts": [
             {"x": 30, "y": 30, "num": 1},
@@ -62,6 +67,7 @@
             {"path": "img/platforms/plataforma.png", "x": 300, "y": 150, "width": 200, "height": 25},
             {"path": "img/platforms/plataforma_vertical.png", "x": 0, "y": 0, "width": 25, "height": 600},
             {"path": "img/platforms/plataforma_vertical.png", "x": 775, "y": 0, "width": 25, "height": 600}
-        ]
+        ],
+        "music_path": "assets/Sounds/the-art-of-synths-149325.mp3"
     }
 ]
